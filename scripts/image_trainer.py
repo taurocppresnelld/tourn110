@@ -95,7 +95,7 @@ def parse_runtime_logs(task_id: str):
                 try:
                     # Safely evaluate the JSON-like dict string
                     entry = ast.literal_eval(entry_str)
-                    # print(f"{entry}")
+                    # print(f"{entry}", flush=True)
                     entries.append(entry)
                 except (ValueError, SyntaxError):
                     # Skip lines that don't parse correctly
@@ -127,7 +127,7 @@ def parse_loss_logs(task_id: str):
                 try:
                     # Safely evaluate the JSON-like dict string
                     entry = ast.literal_eval(entry_str)
-                    # print(f"{entry}")
+                    # print(f"{entry}", flush=True)
                     if entry['learning_rate'] > 0.0:
                         entries.append(entry)
                 except (ValueError, SyntaxError):
@@ -184,10 +184,10 @@ def create_config(task_id, model, model_type, addconfig, expected_repo_name=None
     config["output_dir"] = output_dir
 
 
-    print(f"current_config: {config}")
+    print(f"current_config: {config}", flush=True)
 
 
-    print(f"Total hours {hours_to_complete}")
+    print(f"Total hours {hours_to_complete}", flush=True)
 
 
     trainable_params = 5000000000
@@ -200,21 +200,21 @@ def create_config(task_id, model, model_type, addconfig, expected_repo_name=None
 
             for data in data_models:
                 if data['model_name'].lower() == model.lower():
-                    print(f"model: {data['model_name']}")
+                    print(f"model: {data['model_name']}", flush=True)
 
                     trainable_params = int(data['trainable_params'])
                     trainable_params_hour = int(trainable_params/hours_to_complete)
                     all_params = int(data['all_params'])
                     trainable_percent = data['trainable_percent']
-                    print(f"trainable_params: {trainable_params}")
-                    print(f"trainable_params_hour: {trainable_params_hour}")
-                    print(f"all_params: {all_params}")
-                    print(f"trainable_percent: {trainable_percent}")
+                    print(f"trainable_params: {trainable_params}", flush=True)
+                    print(f"trainable_params_hour: {trainable_params_hour}", flush=True)
+                    print(f"all_params: {all_params}", flush=True)
+                    print(f"trainable_percent: {trainable_percent}", flush=True)
 
         # config = customize_config(config, task_type, model, model_path, all_params)
 
     except Exception as e:
-        print(f"Error checking and logging base model size: {e}")
+        print(f"Error checking and logging base model size: {e}", flush=True)
 
 
     if is_warmup:
@@ -232,16 +232,16 @@ def create_config(task_id, model, model_type, addconfig, expected_repo_name=None
         
         config['max_train_steps'] = int(my_warmup_min/runtime)
 
-        print(f"Final time {format_seconds(my_warmup_min)}")
+        print(f"Final time {format_seconds(my_warmup_min)}", flush=True)
 
-    print(f"max_train_steps: {config['max_train_steps']}")
+    print(f"max_train_steps: {config['max_train_steps']}", flush=True)
     
 
     # config['max_train_steps'] = 0
     # config['max_train_steps'] = 10
     # config['max_train_steps'] = 20
 
-    print(f"max_train_steps: {config['max_train_steps']}")
+    print(f"max_train_steps: {config['max_train_steps']}", flush=True)
 
 
     # if config['lr_warmup_steps'] > config['max_train_steps']:
@@ -254,7 +254,7 @@ def create_config(task_id, model, model_type, addconfig, expected_repo_name=None
     config.update(addconfig)
 
 
-    print(f"custom_config: {config}")
+    print(f"custom_config: {config}", flush=True)
 
 
     # Save config to file
@@ -324,7 +324,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                 )
 
                 try:
-                    print(f"Docker WARMUP ===============================")
+                    print(f"Docker WARMUP ===============================", flush=True)
 
 
                     print(f"Starting training with config: {config_path}", flush=True)
@@ -529,29 +529,29 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
 
 
         except Exception as e:
-            print(f"Error processing job main: {str(e)}")
+            print(f"Error processing job main: {str(e)}", flush=True)
 
         finally:
-            print(f"Docker WARMUP finally ===============================")
+            print(f"Docker WARMUP finally ===============================", flush=True)
 
             try:
                 docker_runtime = calculate_avg_time_from_file(task_id)
-                print(f"docker_runtime: {docker_runtime}")
+                print(f"docker_runtime: {docker_runtime}", flush=True)
 
                 if model_type == ImageModelType.SDXL.value:
                     docker_runtime =  int(docker_runtime*1.1)
                 elif model_type == ImageModelType.FLUX.value:
                     docker_runtime =  int(docker_runtime*0.95)
 
-                print(f"Avg runtime: {docker_runtime}")
+                print(f"Avg runtime: {docker_runtime}", flush=True)
 
             except Exception as e:
-                print(f"Failed to get avg runtime: {e}")
+                print(f"Failed to get avg runtime: {e}", flush=True)
 
 
             try:
                 dummy_loss = calculate_avg_loss_from_file(task_id)
-                print(f"dummy_loss: {dummy_loss}")
+                print(f"dummy_loss: {dummy_loss}", flush=True)
 
                 if dummy_loss < docker_loss*1.2:
                     docker_loss = dummy_loss
@@ -575,12 +575,12 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                     # try:
                     #     container = client.containers.get('/hf-uploader')
                     #     if container.status == 'running':
-                    #         print(f"Stopping container '{container.name}'...")
+                    #         print(f"Stopping container '{container.name}'...", flush=True)
                     #         container.stop()
-                    #         print(f"Container '{container.name}' stopped.")                        
+                    #         print(f"Container '{container.name}' stopped.", flush=True)         
 
                     # except docker.errors.NotFound:
-                    #     print(f"Container 'your_container_name' not found.")
+                    #     print(f"Container 'your_container_name' not found.", flush=True)
 
                 else:
                     # docker_maxi = False
@@ -602,9 +602,9 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                     # docker_unet_lrate = last_unet_lrate
                     # docker_config['unet_lr'] = docker_unet_lrate
 
-                print(f"Last loss: {docker_loss}")
-                print(f"Loss count: {loss_count}")
-                print(f"Loss loop: {loss_loop}")
+                print(f"Last loss: {docker_loss}", flush=True)
+                print(f"Loss count: {loss_count}", flush=True)
+                print(f"Loss loop: {loss_loop}", flush=True)
 
                 if loss_count >= 7:
                     docker_maxi = False
@@ -619,7 +619,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                     docker_failed = False
 
             except Exception as e:
-                print(f"Failed to get avg loss: {e}")
+                print(f"Failed to get avg loss: {e}", flush=True)
 
 
     docker_failed = True
@@ -658,7 +658,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
             )
 
             try:
-                print(f"Docker TRAINING ===============================")
+                print(f"Docker TRAINING ===============================", flush=True)
 
 
                 print(f"Starting training with config: {config_path}", flush=True)
@@ -861,10 +861,10 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
 
 
     except Exception as e:
-        print(f"Error processing job main: {str(e)}")
+        print(f"Error processing job main: {str(e)}", flush=True)
 
     finally:
-        print(f"Docker TRAINING finally ===============================")
+        print(f"Docker TRAINING finally ===============================", flush=True)
 
 
 async def main():
