@@ -168,7 +168,10 @@ def create_config(task_id, model, model_type, addconfig, expected_repo_name=None
     with open(config_template_path, "r") as file:
         config = toml.load(file)
 
-    config['train_batch_size'] = int(batch/config['gradient_accumulation_steps'])
+    dummy_train = int(batch/config['gradient_accumulation_steps'])
+    if dummy_train < 1:
+        dummy_train = 1
+    config['train_batch_size'] = dummy_train
     config['resolution'] = seq
     config['learning_rate'] = lrate
 
@@ -268,12 +271,12 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
     # docker_batch = [8,8,8,4,4,4]
     docker_batch = [1,1,1]
     docker_seq = ["1024,1024","768,768","512,512","1024,1024","768,768","512,512","1024,1024","768,768","512,512","1024,1024","768,768","512,512"]
-    docker_lrate = 0.003
-    last_lrate = 0.003
-    best_lrate = 0.003
-    docker_unet_lrate = 0.0003
-    last_unet_lrate = 0.0003
-    best_unet_lrate = 0.0003
+    docker_lrate = 0.001
+    last_lrate = 0.001
+    best_lrate = 0.001
+    docker_unet_lrate = 0.001
+    last_unet_lrate = 0.001
+    best_unet_lrate = 0.001
     docker_runtime = 10
     docker_config = {}
     docker_loss = 1
@@ -550,7 +553,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                 dummy_loss = calculate_avg_loss_from_file(task_id)
                 print(f"dummy_loss: {dummy_loss}")
 
-                if dummy_loss < docker_loss*0.80:
+                if dummy_loss < docker_loss*1.2:
                     docker_loss = dummy_loss
                     docker_failed = True
 
@@ -603,7 +606,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                 print(f"Loss count: {loss_count}")
                 print(f"Loss loop: {loss_loop}")
 
-                if loss_count >= 5:
+                if loss_count >= 7:
                     docker_maxi = False
                     docker_failed = False
 
@@ -611,7 +614,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                     docker_maxi = False
                     docker_failed = False
 
-                if docker_lrate > 1:
+                if docker_lrate > 0.1:
                     docker_maxi = False
                     docker_failed = False
 
