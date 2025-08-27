@@ -270,7 +270,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
     docker_level = ["low"]
     # docker_batch = [8,8,8,4,4,4]
     docker_batch = [1,1,1]
-    docker_seq = ["1024,1024","768,768","512,512","1024,1024","768,768","512,512","1024,1024","768,768","512,512","1024,1024","768,768","512,512"]
+    docker_seq = ["512,512","448,448","384,384"]
     docker_lrate = 0.001
     last_lrate = 0.001
     best_lrate = 0.001
