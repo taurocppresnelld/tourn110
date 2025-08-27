@@ -276,6 +276,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
     docker_config = {}
     docker_loss = 1
     loss_count = 0
+    loss_loop = 0
 
     docker_failed = True
     idx = 0
@@ -547,7 +548,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                 dummy_loss = calculate_avg_loss_from_file(task_id)
                 print(f"dummy_loss: {dummy_loss}")
 
-                if dummy_loss < docker_loss:
+                if dummy_loss < docker_loss*0.80:
                     docker_loss = dummy_loss
                     docker_failed = True
 
@@ -560,6 +561,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                     docker_config['unet_lr'] = docker_unet_lrate
 
                     loss_count = loss_count + 1
+                    loss_loop = loss_loop + 1
 
                     # docker_client = docker.from_env()
 
@@ -578,12 +580,14 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                     docker_failed = True
 
                     last_lrate = docker_lrate
-                    docker_lrate = docker_lrate*1.1
+                    docker_lrate = docker_lrate*1.3
                     docker_config['learning_rate'] = docker_lrate
 
                     last_unet_lrate = docker_unet_lrate
-                    docker_unet_lrate = docker_unet_lrate*1.1
+                    docker_unet_lrate = docker_unet_lrate*1.3
                     docker_config['unet_lr'] = docker_unet_lrate
+
+                    loss_loop = loss_loop + 1
 
                     # docker_lrate = last_lrate
                     # docker_config['learning_rate'] = docker_lrate
@@ -593,12 +597,17 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
 
                 print(f"Last loss: {docker_loss}")
                 print(f"Loss count: {loss_count}")
+                print(f"Loss loop: {loss_loop}")
 
                 if loss_count >= 5:
                     docker_maxi = False
                     docker_failed = False
 
                 if docker_exit:
+                    docker_maxi = False
+                    docker_failed = False
+
+                if docker_lrate > 1:
                     docker_maxi = False
                     docker_failed = False
 
